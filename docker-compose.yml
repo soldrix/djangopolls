@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - djangoNetwork
+
+  django-db:
+    image: postgres:12
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - djangoNetwork
+
+  web:
+    depends_on:
+      - django-db
+    build: ./
+    ports:
+      - 8000:8000
+    working_dir: /django-polls
+    volumes:
+      - .:/django-polls
+    entrypoint: /bin/sh -c "sleep 10 && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    networks:
+      - djangoNetwork
+
+
+volumes:
+  django-db:
+
+networks:
+  djangoNetwork:
+    driver: bridge
